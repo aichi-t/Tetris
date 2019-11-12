@@ -218,6 +218,11 @@ class Piece(object):
         self.shape = shape
         self.color = shape_colors[shapes.index(shape)]
         self.rotation = 0
+    
+    def reset_piece(self,x,y):
+        self.x = x
+        self.y = y
+        self.rotation = 0
 
 
 def create_grid(locked_positions={}):
@@ -323,6 +328,25 @@ def draw_next_shape(shape, surface):
     
     surface.blit(label,(sx + 10, sy - 30))
 
+def draw_hold(shape,surface):
+    font = pygame.font.SysFont('comicsans', 30)
+    label = font.render('Hold', 1, (255,255,255))
+
+    sx = top_left_x - 150 
+    sy = top_left_y
+
+    if shape != None:
+        format = shape.shape[shape.rotation % len(shape.shape)]
+
+        for i, line in enumerate(format):
+            row = list(line)
+            for j, column in enumerate(row):
+                if column == '0':
+                    pygame.draw.rect(surface, shape.color, (sx + j*block_size, sy + i*block_size, block_size,block_size),0)
+        
+    surface.blit(label,(sx + 10, sy - 30))
+
+
 def draw_window(surface,grid,score):
     surface.fill((0, 0, 0))
 
@@ -377,15 +401,17 @@ def update_score(nscore):
             f.write(score)
         else:
             f.write(str(nscore))
+
 def main(win):
 
     locked_positions = {}
     grid = create_grid(locked_positions)
-
     change_piece = False
     run = True
     current_piece  = get_shape()
     next_piece = get_shape()
+    hold_piece = None
+    hold_lock = False
     clock = pygame.time.Clock()
     fall_time = 0
     fall_speed = 0.27
@@ -393,6 +419,7 @@ def main(win):
     score = 0
 
     while run:
+        hold = False
 
         grid = create_grid(locked_positions)
         fall_time += clock.get_rawtime() 
@@ -437,25 +464,44 @@ def main(win):
                     current_piece.y += 2
                     if not (valid_space(current_piece,grid)):
                         current_piece.y -= 2
- 
-        shape_pos = convert_shape_format(current_piece)
+                
+                if event.key == pygame.K_RSHIFT:
+                    if not hold_lock:
+                        hold = True
+                        hold_lock = True
+                        if hold_piece == None:
+                            hold_piece = current_piece
+                            hold_piece.reset_piece(5,0)
+                            current_piece = next_piece
+                            next_piece = get_shape()
+                        else:
+                            temp_current_piece = current_piece
+                            current_piece = hold_piece
+                            hold_piece = temp_current_piece 
+                            hold_piece.reset_piece(5,0)
+                            next_piece = get_shape()
 
-        for i in range(len(shape_pos)):
-            x,y = shape_pos[i]
-            if y > -1:
-                grid[y][x] =  current_piece.color
+        if not hold:
+            shape_pos = convert_shape_format(current_piece)
 
-        if change_piece:
-            for pos in shape_pos:
-                p = (pos[0],pos[1])
-                locked_positions[p] = current_piece.color
+            for i in range(len(shape_pos)):
+                x,y = shape_pos[i]
+                if y > -1:
+                    grid[y][x] =  current_piece.color
 
-            current_piece = next_piece
-            next_piece = get_shape()
-            change_piece = False
-            score += clear_rows(grid, locked_positions) * 10
+            if change_piece:
+                for pos in shape_pos:
+                    p = (pos[0],pos[1])
+                    locked_positions[p] = current_piece.color
+
+                current_piece = next_piece
+                next_piece = get_shape()
+                change_piece = False
+                score += clear_rows(grid, locked_positions) * 10
+                hold_lock = False
 
         draw_window(win,grid,score)
+        draw_hold(hold_piece,win)
         draw_next_shape(next_piece,win)
         pygame.display.update()
 
