@@ -333,6 +333,7 @@ def draw_window(surface,grid,score):
     surface.blit(label, (top_left_x + play_width /
                          2 - (label.get_width()/2), 30))
 
+    # Displaying score
     font = pygame.font.SysFont('comicsans', 30)
     label = font.render('Score:' + str(score), 1, (255,255,255))
 
@@ -340,7 +341,22 @@ def draw_window(surface,grid,score):
     sy = top_left_y + play_height / 2 - 100
 
     surface.blit(label, (sx + 20,sy + 160))
+    
+    # Displaying high score
+    with open('scores.txt','r') as f:
+        lines = f.readlines()
+        high_score = lines[0].strip()    
+
+    font = pygame.font.SysFont('comicsans', 30)
+    label = font.render('High Score:' + high_score, 1, (255,255,255))
+
+    sx = top_left_x - play_width + 100
+    sy = top_left_y + play_height / 2 - 200
+
+    surface.blit(label, (sx + 20,sy + 160))
  
+
+
     for i in range(len(grid)):
         for j in range(len(grid[i])):
             pygame.draw.rect(
@@ -354,11 +370,11 @@ def draw_window(surface,grid,score):
 def update_score(nscore):
     with open('scores.txt', 'r') as f: 
         lines = f.readlines()
-        score = lines[0].strip
-
+        score = lines[0].strip()
+        print(score)
     with open('scores.txt','w') as f:
         if int(score) > nscore:
-            f.write(str(score))
+            f.write(score)
         else:
             f.write(str(nscore))
 def main(win):
@@ -416,7 +432,12 @@ def main(win):
                     current_piece.rotation += 1
                     if not(valid_space(current_piece,grid)):
                         current_piece.rotation -= 1
-        
+                
+                if event.key == pygame.K_SPACE:
+                    current_piece.y += 2
+                    if not (valid_space(current_piece,grid)):
+                        current_piece.y -= 2
+ 
         shape_pos = convert_shape_format(current_piece)
 
         for i in range(len(shape_pos)):
@@ -439,11 +460,11 @@ def main(win):
         pygame.display.update()
 
         if check_lost(locked_positions):
-            draw_text_middle("YOU LOST!", 80, (255,255,255),win)
+            draw_text_middle("Game Over!", 80, (255,255,255),win)
             pygame.display.update()
             pygame.time.delay(3000)
             run = False
-            # update_score(score)
+            update_score(score)
 
 def main_menu(win):
     run = True
