@@ -202,9 +202,14 @@ T = [['.....',
       '..0..',
       '.....']]
 
-shapes = [S, Z, I, O, J, L, T, o,i,P,j]
+shapes = [S, Z, I, O, J, L, T]
 shape_colors = [(0, 255, 0), (255, 0, 0), (0, 255, 255),
-              (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128),(222,32,173),(255,255,255),(102,84,128),(240,247,16)]
+              (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128)]
+
+
+# shapes = [S, Z, I, O, J, L, T, o,i,P,j]
+# shape_colors = [(0, 255, 0), (255, 0, 0), (0, 255, 255),
+            #   (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128),(222,32,173),(255,255,255),(102,84,128),(240,247,16)]
 # index 0 - 6 represent shape
 # shapes = [j]
 # shape_colors = [
@@ -278,7 +283,17 @@ def draw_text_middle(text, size, color, surface):
     font = pygame.font.SysFont("comicsans",size, bold = True)
     label = font.render(text, 1, color)
 
+    
     surface.blit(label,(top_left_x + play_width / 2 - (label.get_width() / 2), top_left_y + play_height / 2 - (label.get_height() / 2)))
+
+def draw_level_up(surface):
+    font = pygame.font.SysFont("comicsans",30, bold = True)
+    label = font.render("Level Up!!!", 1, (255,244,18))
+
+    sx = top_left_x + play_width + 50
+    sy = top_left_y + (play_height / 2) + 10
+
+    surface.blit(label, (sx + 20, sy + 130))
 
 def draw_grid(surface, grid):
     sx = top_left_x
@@ -316,8 +331,10 @@ def draw_next_shape(shape, surface):
     font = pygame.font.SysFont('comicsans', 30)
     label = font.render('Next Shape', 1, (255,255,255))
 
+
     sx = top_left_x + play_width + 50
-    sy = top_left_y + play_height / 2 - 100
+    sy = top_left_y  + 50
+
     format = shape.shape[shape.rotation % len(shape.shape)]
 
     for i, line in enumerate(format):
@@ -342,12 +359,12 @@ def draw_hold(shape,surface):
             row = list(line)
             for j, column in enumerate(row):
                 if column == '0':
-                    pygame.draw.rect(surface, shape.color, (sx + j*block_size, sy + i*block_size, block_size,block_size),0)
+                    pygame.draw.rect(surface, shape.color, (sx + j*block_size - 45, sy + i*block_size, block_size,block_size),0)
         
     surface.blit(label,(sx + 10, sy - 30))
 
 
-def draw_window(surface,grid,score):
+def draw_window(surface,grid,score,current_level):
     surface.fill((0, 0, 0))
 
     pygame.font.init()
@@ -357,12 +374,21 @@ def draw_window(surface,grid,score):
     surface.blit(label, (top_left_x + play_width /
                          2 - (label.get_width()/2), 30))
 
-    # Displaying score
-    font = pygame.font.SysFont('comicsans', 30)
-    label = font.render('Score:' + str(score), 1, (255,255,255))
+    # Displaying current level
+    font = pygame.font.SysFont('comiscans',30)
+    label = font.render('Level: '+ str(current_level), 1, (255,255,255))
 
     sx = top_left_x + play_width + 50
-    sy = top_left_y  - 100
+    sy = top_left_y + (play_height / 2) + 10
+
+    surface.blit(label, (sx + 20, sy + 160))
+
+    # Displaying score
+    font = pygame.font.SysFont('comicsans', 30)
+    label = font.render('Score: ' + str(score), 1, (255,255,255))
+
+    sx = top_left_x + play_width + 50
+    sy = top_left_y + (play_height / 2) + 50
 
     surface.blit(label, (sx + 20,sy + 160))
     
@@ -391,6 +417,17 @@ def draw_window(surface,grid,score):
     draw_grid(surface,grid)
     # pygame.display.update()
 
+def update_shapes(new_level):
+    if new_level == 5:
+        shapes.append(i)
+        shape_colors.append((255,255,255))
+    if new_level == 10:
+        shapes.append(P)
+        shape_colors.append((117,22,255))
+    if new_level == 15:
+        shapes.append(J)
+        shape_colors.append((255,0,162))
+
 def update_score(nscore):
     with open('scores.txt', 'r') as f: 
         lines = f.readlines()
@@ -414,29 +451,48 @@ def main(win):
     hold_lock = False
     clock = pygame.time.Clock()
     fall_time = 0
-    fall_speed = 0.27
+    fall_speed = 0.3
     level_time = 0
+    current_level = 1
     score = 0
+    piece_landed = False
+    landed_delay = 0
+    leveled_up = False
+    time_since_level_up = 0
 
     while run:
-        hold = False
+        swapped_piece = False
 
         grid = create_grid(locked_positions)
+
+        if piece_landed:
+            landed_delay += clock.get_rawtime()
+        
+        
+
+
         fall_time += clock.get_rawtime() 
         level_time += clock.get_rawtime()
         clock.tick()
 
-        if level_time / 1000 > 5:
-            level_time = 0
-            if fall_speed > 0.12:
-                fall_speed -= 0.005
+        # if level_time / 1000 > 5:
+        #     level_time = 0
+        #     if fall_speed > 0.12:
+        #         fall_speed -= 0.005
+
+        
             
+        # Making the piece fall
         if fall_time / 1000 > fall_speed:
             fall_time = 0
             current_piece.y += 1
             if not (valid_space(current_piece,grid)) and current_piece.y >0:
                 current_piece.y -= 1
-                change_piece = True
+                piece_landed = True
+                if landed_delay > 1000:
+                    change_piece = True
+                    piece_landed = False
+                    landed_delay = 0
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -445,18 +501,25 @@ def main(win):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     current_piece.x -= 1 
+                    if piece_landed:
+                        landed_delay -= 100
                     if not (valid_space(current_piece,grid)):
                         current_piece.x += 1
                 if event.key == pygame.K_RIGHT:
                     current_piece.x += 1
+                    if piece_landed:
+                        landed_delay -= 100
                     if not (valid_space(current_piece,grid)):
                         current_piece.x -= 1
                 if event.key == pygame.K_DOWN:
                     current_piece.y += 1
                     if not (valid_space(current_piece,grid)):
                         current_piece.y -= 1
+
                 if event.key == pygame.K_UP:
                     current_piece.rotation += 1
+                    if piece_landed:
+                        landed_delay -= 200
                     if not(valid_space(current_piece,grid)):
                         current_piece.rotation -= 1
                 
@@ -467,7 +530,7 @@ def main(win):
                 
                 if event.key == pygame.K_RSHIFT:
                     if not hold_lock:
-                        hold = True
+                        swapped_piece = True
                         hold_lock = True
                         if hold_piece == None:
                             hold_piece = current_piece
@@ -479,9 +542,9 @@ def main(win):
                             current_piece = hold_piece
                             hold_piece = temp_current_piece 
                             hold_piece.reset_piece(5,0)
-                            next_piece = get_shape()
+                            # next_piece = get_shape()
 
-        if not hold:
+        if not swapped_piece:
             shape_pos = convert_shape_format(current_piece)
 
             for i in range(len(shape_pos)):
@@ -490,6 +553,7 @@ def main(win):
                     grid[y][x] =  current_piece.color
 
             if change_piece:
+
                 for pos in shape_pos:
                     p = (pos[0],pos[1])
                     locked_positions[p] = current_piece.color
@@ -500,9 +564,29 @@ def main(win):
                 score += clear_rows(grid, locked_positions) * 10
                 hold_lock = False
 
-        draw_window(win,grid,score)
+        # Changing the speed of the piece fall as the level increases 
+        if score >= current_level * 40:
+            draw_level_up(win)
+            leveled_up = True
+            current_level += 1
+            if fall_speed > 0.12:
+                if current_level < 5:
+                    fall_speed -= 0.02
+                elif current_level < 10:
+                    fall_speed -= 0.035
+                else:
+                    fall_speed -= 0.05
+
+        draw_window(win,grid,score,current_level)
         draw_hold(hold_piece,win)
         draw_next_shape(next_piece,win)
+
+        if leveled_up:
+            time_since_level_up += clock.get_rawtime()
+            draw_level_up(win)
+            if time_since_level_up > 3000:
+                leveled_up = False
+                
         pygame.display.update()
 
         if check_lost(locked_positions):
