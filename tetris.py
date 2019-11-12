@@ -338,7 +338,7 @@ def draw_window(surface,grid,score):
     label = font.render('Score:' + str(score), 1, (255,255,255))
 
     sx = top_left_x + play_width + 50
-    sy = top_left_y + play_height / 2 - 100
+    sy = top_left_y  - 100
 
     surface.blit(label, (sx + 20,sy + 160))
     
@@ -362,7 +362,7 @@ def draw_window(surface,grid,score):
             pygame.draw.rect(
                 surface, grid[i][j], (top_left_x + j * block_size, top_left_y + i * block_size, block_size,block_size),0)
 
-    pygame.draw.rect(surface, (255,0,0), (top_left_x,top_left_y,play_width,play_height),4)
+    pygame.draw.rect(surface, (255,255,255), (top_left_x,top_left_y,play_width,play_height),4)
 
     draw_grid(surface,grid)
     # pygame.display.update()
