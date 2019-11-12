@@ -467,9 +467,6 @@ def main(win):
 
         if piece_landed:
             landed_delay += clock.get_rawtime()
-        
-        
-
 
         fall_time += clock.get_rawtime() 
         level_time += clock.get_rawtime()
@@ -565,17 +562,17 @@ def main(win):
                 hold_lock = False
 
         # Changing the speed of the piece fall as the level increases 
-        if score >= current_level * 40:
+        if score >= current_level * 10:
             draw_level_up(win)
             leveled_up = True
             current_level += 1
-            if fall_speed > 0.12:
+            if fall_speed > 0.02:
                 if current_level < 5:
-                    fall_speed -= 0.02
+                    fall_speed -= 0.015
                 elif current_level < 10:
-                    fall_speed -= 0.035
+                    fall_speed -= 0.025
                 else:
-                    fall_speed -= 0.05
+                    fall_speed -= 0.03
 
         draw_window(win,grid,score,current_level)
         draw_hold(hold_piece,win)
@@ -586,6 +583,7 @@ def main(win):
             draw_level_up(win)
             if time_since_level_up > 3000:
                 leveled_up = False
+                time_since_level_up = 0
                 
         pygame.display.update()
 
