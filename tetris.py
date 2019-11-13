@@ -459,6 +459,7 @@ def main(win):
     landed_delay = 0
     leveled_up = False
     time_since_level_up = 0
+    paused = False
 
     while run:
         swapped_piece = False
@@ -540,6 +541,27 @@ def main(win):
                             hold_piece = temp_current_piece 
                             hold_piece.reset_piece(5,0)
                             # next_piece = get_shape()
+                
+                if event.key == pygame.K_ESCAPE:
+                    
+                    paused = True
+                     
+                if landed_delay < 500:
+                    landed_delay = 500
+
+        while paused:
+            draw_text_middle("Paused", 80, (255,255,255),win)
+            pygame.display.update()
+            unpaused = False
+            while not unpaused:
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            paused = False
+                            unpaused = True
+                            
+                            
+
 
         if not swapped_piece:
             shape_pos = convert_shape_format(current_piece)
@@ -562,7 +584,7 @@ def main(win):
                 hold_lock = False
 
         # Changing the speed of the piece fall as the level increases 
-        if score >= current_level * 10:
+        if score >= current_level * 50:
             draw_level_up(win)
             leveled_up = True
             current_level += 1
