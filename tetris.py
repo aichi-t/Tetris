@@ -167,19 +167,20 @@ def main(win):
                         if event.key == pygame.K_l:
                             with open('saved_state.txt','r') as f:
                                 lines = f.readlines()
-                                if len(lines) == 0:
-                                    loadable = False
-                                else:
-                                    loadable = True
-                                    states = load_state()
-                                    locked_positions = states[0]
-                                    current_piece = states[1]
-                                    next_piece = states[2]
-                                    hold_piece = states[3]
-                                    current_level = states[4]
-                                    score = states[5]
+                                f.close()
+                            if len(lines) == 0:
+                                loadable = False
+                            else:
+                                loadable = True
+                                loaded = True
+                                states = load_state()
+                                locked_positions = states[0]
+                                current_piece = states[1]
+                                next_piece = states[2]
+                                hold_piece = states[3]
+                                current_level = states[4]
+                                score = states[5]
 
-                            f.close()
 
 
 

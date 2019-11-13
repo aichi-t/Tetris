@@ -273,7 +273,7 @@ def load_state():
     current_piece = Piece(5,0,current_piece_letter)
     next_piece = Piece(5,0,next_piece_letter)
     if hold_piece_letter != '#':
-        hold_piece = Piece(5,0,next_piece_letter)
+        hold_piece = Piece(5,0,hold_piece_letter)
     else:
         hold_piece = None
     # Extracting score information
@@ -356,5 +356,3 @@ if __name__ == "__main__":
 
     locked = {(0,1):(221,42,53),(1,52):(33,44,33)}
     # save_state(locked,current_piece,next_piece)
-
-    print(load_state())
