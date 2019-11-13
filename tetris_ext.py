@@ -64,7 +64,7 @@ def check_lost(positions):
     return False
 
 def get_shape(shapes):
-    return Piece(5,0,random.choice(shapes))
+    return Piece(5,1,random.choice(shapes))
 
 
 def draw_text_middle(text, size, color, surface):
@@ -73,6 +73,14 @@ def draw_text_middle(text, size, color, surface):
 
     
     surface.blit(label,(top_left_x + play_width / 2 - (label.get_width() / 2), top_left_y + play_height / 2 - (label.get_height() / 2)))
+
+def draw_text_around_middle(text, size, color, surface,y):
+    font = pygame.font.SysFont("comicsans",size, bold = True)
+    label = font.render(text, 1, color)
+
+    
+    surface.blit(label,(top_left_x + play_width / 2 - (label.get_width() / 2), top_left_y + play_height / 2 - (label.get_height() / 2)+y))
+
 
 def draw_level_up(surface):
     font = pygame.font.SysFont("comicsans",30, bold = True)
@@ -224,3 +232,129 @@ def update_score(nscore):
         else:
             f.write(str(nscore))
 
+def save_state(locked,current_piece,next_piece,hold_piece,current_level,score):
+
+    f = open('saved_state.txt','w')
+    
+    # Piece information is written as follows
+    # current_piece:next_piece:hold_piece
+
+    current_piece_letter = current_piece.get_shape_letter()
+    next_piece_letter = next_piece.get_shape_letter()
+    if hold_piece != None:
+        hold_piece_letter = hold_piece.get_shape_letter()
+        f.write("%s:%s:%s\n" % (current_piece_letter,next_piece_letter,hold_piece_letter))
+    else:
+        f.write("%s:%s:#\n"%(current_piece_letter,next_piece_letter))
+
+    # Writing current score and level
+    f.write("%s:%s\n" % (current_level,score))
+
+    # Writing current locked positions
+    for key in locked:
+        value = list(locked[key])
+        key = list(key)
+        f.write("%d,%d:%d,%d,%d\n" % (key[0],key[1],value[0],value[1],value[2]))
+
+    f.close()
+
+def load_state():
+
+    f = open('saved_state.txt','r')
+
+    lines = f.readlines()
+
+    # Extracting piece information
+    piece_info = lines[0].strip("\n")
+    current_piece_letter = piece_info[0]
+    next_piece_letter = piece_info[2]
+    hold_piece_letter = piece_info[4]
+
+    current_piece = Piece(5,0,current_piece_letter)
+    next_piece = Piece(5,0,next_piece_letter)
+    if hold_piece_letter != '#':
+        hold_piece = Piece(5,0,next_piece_letter)
+    else:
+        hold_piece = None
+    # Extracting score information
+    score_info = lines[1]
+    current_level = 0
+    score = 0
+    temp = ''
+    counter = 0
+    for i in range(len(score_info)):
+        if score_info[i] != ':':
+            temp += score_info[i]
+            if i == len(score_info) - 1:
+                score = int(temp)
+        else:
+            if counter == 0:
+                current_level = int(temp)
+                temp = ''
+
+
+    locked = {}
+    locked_info = lines[2:]
+
+    for line in locked_info:
+        # Extract locked position data from file
+
+        # Extracting position values
+        line.strip("\n")
+        pos1 = 0
+        pos2 = 0
+        counter = 0
+        temp = ''
+        for i in range(len(line)):
+            if line[i] == ':':
+                line = line[i+1:]
+                break
+
+            if line[i] != ',':
+                temp += line[i]
+                if line[i+1] == ':':
+                    pos2 = int(temp)
+            else:
+                if counter == 0:
+                    pos1 = int(temp)
+                    temp = ''
+        pos = (pos1,pos2)
+
+        # Extracting color values
+        r = 0
+        g = 0
+        b = 0
+        temp = ''
+        counter = 0
+        for i in range (len(line)):
+            if line[i] != ',':
+                temp += line[i]
+                if i == len(line) - 1:
+                    b = int(temp)
+            else:
+                if counter == 0:
+                    r = int(temp)
+                    temp = ''
+                elif counter == 1:
+                    g = int(temp)
+                    temp = ''
+                else:
+                    b = int(temp)
+                    temp = ''
+                counter += 1
+        color = (r,g,b)
+
+        locked[pos] = color
+    
+    f.close()
+
+    return (locked,current_piece,next_piece,hold_piece,current_level,score)
+
+if __name__ == "__main__":
+    current_piece = Piece(5,0,'I')
+    next_piece = Piece(5,0,'J')
+
+    locked = {(0,1):(221,42,53),(1,52):(33,44,33)}
+    # save_state(locked,current_piece,next_piece)
+
+    print(load_state())

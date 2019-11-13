@@ -10,6 +10,10 @@ class Piece(object):
         self.shape = self.original_shape.get_shape()
         self.color = self.original_shape.get_color()
         self.rotation = 0
+        self.letter = shape_letter
+
+    def get_shape_letter(self):
+        return self.letter
 
     def reset_piece(self, x, y):
         self.x = x

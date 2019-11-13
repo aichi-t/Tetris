@@ -133,16 +133,55 @@ def main(win):
                 if landed_delay < 500:
                     landed_delay = 500
 
+        saved = False
+        loaded = False
+        loadable = True 
         while paused:
             draw_text_middle("Paused", 80, (255,255,255),win)
             pygame.display.update()
             unpaused = False
             while not unpaused:
+                if not saved:
+                    draw_text_around_middle("Press 'S' to save state",30,(46, 204, 113),win,50)
+                else:
+                    draw_text_around_middle("State Saved Successfully",30,(46, 204, 113),win,80)
+
+                if not loaded:
+                    draw_text_around_middle("Press 'L' to load state",30,(244, 208, 63),win,110)
+                if not loadable:
+                    draw_text_around_middle("There is no saved state to load",30,(231, 76, 60),win,170)
+                elif loaded:
+                    draw_text_around_middle("Saved state loaded",30,(244, 208, 63),win,140)
+
+
+                pygame.display.update()
+
                 for event in pygame.event.get():
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             paused = False
                             unpaused = True
+                        if event.key == pygame.K_s:
+                            save_state(locked_positions,current_piece,next_piece,hold_piece,current_level,score)
+                            saved = True
+                        if event.key == pygame.K_l:
+                            with open('saved_state.txt','r') as f:
+                                lines = f.readlines()
+                                if len(lines) == 0:
+                                    loadable = False
+                                else:
+                                    loadable = True
+                                    states = load_state()
+                                    locked_positions = states[0]
+                                    current_piece = states[1]
+                                    next_piece = states[2]
+                                    hold_piece = states[3]
+                                    current_level = states[4]
+                                    score = states[5]
+
+                            f.close()
+
+
 
 
         if not swapped_piece:
@@ -160,6 +199,7 @@ def main(win):
                     locked_positions[p] = current_piece.color
 
 
+                print(locked_positions)
                 current_piece = next_piece
                 next_piece = get_shape(shapes)
                 change_piece = False
