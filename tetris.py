@@ -1,3 +1,11 @@
+# Add music
+# Add sfx
+# Long piece bug
+# Piece weight
+# W 
+# 3 * 3 piece
+# save fall speed
+
 import pygame
 import json
 from tetris_ext import *
@@ -20,7 +28,7 @@ block_size = 30
 top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height
 
-shapes = ['S','Z','I','O','J','L','T']
+shapes = ['S','Z','I','O','J','L','T','F']
 
 
 def main(win):
@@ -36,6 +44,7 @@ def main(win):
     clock = pygame.time.Clock()
     fall_time = 0
     fall_speed = 0.6
+    fall_speed_limit = 0.02
     level_time = 0
     current_level = 1
     score = 0
@@ -44,6 +53,12 @@ def main(win):
     leveled_up = False
     time_since_level_up = 0
     paused = False
+
+    pygame.mixer.pre_init()
+    pygame.mixer.init()
+    # pygame.mixer.music.load('./sounds/bgm.mp3')
+    # pygame.mixer.music.play(-1)
+
 
     while run:
         swapped_piece = False
@@ -65,7 +80,7 @@ def main(win):
             if not (valid_space(current_piece,grid)) and current_piece.y >0:
                 current_piece.y -= 1
                 piece_landed = True
-                if landed_delay > 1000:
+                if landed_delay > 700:
                     change_piece = True
                     piece_landed = False
                     landed_delay = 0
@@ -93,6 +108,8 @@ def main(win):
                         current_piece.y -= 1
 
                 if event.key == pygame.K_UP:
+                    sound = pygame.mixer.Sound("./sounds/type.mp3")
+                    sound.play()
                     current_piece.rotation += 1
                     if piece_landed:
                         landed_delay -= 200
@@ -100,14 +117,14 @@ def main(win):
                         current_piece.rotation -= 1
                 
                 if event.key == pygame.K_SPACE:
-                    current_piece.y += 2
+                    current_piece.y += 3
                     if not (valid_space(current_piece,grid)):
-                        current_piece.y -= 2
+                        current_piece.y -= 3
 
-                if event.key == pygame.K_RETURN:
-                    current_piece.y += 4
-                    if not (valid_space(current_piece,grid)):
-                        current_piece.y -= 4
+                # if event.key == pygame.K_RETURN:
+                    # current_piece.y += 4
+                    # if not (valid_space(current_piece,grid)):
+                        # current_piece.y -= 4
                 
                 if event.key == pygame.K_RSHIFT:
                     if not hold_lock:
@@ -207,18 +224,19 @@ def main(win):
                 hold_lock = False
 
         # Changing the speed of the piece fall as the level increases 
-        if score >= current_level * 10:
+        if score >= current_level * 50:
             draw_level_up(win)
             leveled_up = True
             current_level += 1
             shapes = update_shapes(shapes,current_level)
-            if fall_speed > 0.02:
+            if fall_speed > fall_speed_limit:
                 if current_level < 5:
-                    fall_speed -= 0.005
+                    fall_speed -= 0.03
                 elif current_level < 10:
-                    fall_speed -= 0.010
+                    fall_speed -= 0.04
                 else:
-                    fall_speed -= 0.012
+                    fall_speed -= 0.02
+                
 
         draw_window(win,grid,score,current_level)
         draw_hold(hold_piece,win)
