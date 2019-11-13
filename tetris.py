@@ -20,12 +20,11 @@ block_size = 30
 top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height
 
-
 shapes = ['S','Z','I','O','J','L','T']
 
 
 def main(win):
-
+    global shapes
     locked_positions = {}
     grid = create_grid(locked_positions)
     change_piece = False
@@ -142,7 +141,7 @@ def main(win):
             unpaused = False
             while not unpaused:
                 if not saved:
-                    draw_text_around_middle("Press 'S' to save state",30,(46, 204, 113),win,50)
+                    draw_text_around_middle("Press 'S' to save state",30,(244, 208, 63),win,50)
                 else:
                     draw_text_around_middle("State Saved Successfully",30,(46, 204, 113),win,80)
 
@@ -151,7 +150,7 @@ def main(win):
                 if not loadable:
                     draw_text_around_middle("There is no saved state to load",30,(231, 76, 60),win,170)
                 elif loaded:
-                    draw_text_around_middle("Saved state loaded",30,(244, 208, 63),win,140)
+                    draw_text_around_middle("Saved state loaded",30,(46, 204, 113),win,140)
 
 
                 pygame.display.update()
@@ -180,6 +179,7 @@ def main(win):
                                 hold_piece = states[3]
                                 current_level = states[4]
                                 score = states[5]
+                                update_shapes(shapes,current_level)
 
 
 
@@ -200,7 +200,6 @@ def main(win):
                     locked_positions[p] = current_piece.color
 
 
-                print(locked_positions)
                 current_piece = next_piece
                 next_piece = get_shape(shapes)
                 change_piece = False
@@ -208,11 +207,11 @@ def main(win):
                 hold_lock = False
 
         # Changing the speed of the piece fall as the level increases 
-        if score >= current_level * 50:
+        if score >= current_level * 10:
             draw_level_up(win)
             leveled_up = True
             current_level += 1
-            update_shapes(shapes,current_level)
+            shapes = update_shapes(shapes,current_level)
             if fall_speed > 0.02:
                 if current_level < 5:
                     fall_speed -= 0.005

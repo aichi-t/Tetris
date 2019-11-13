@@ -214,13 +214,15 @@ def draw_window(surface,grid,score,current_level):
     # pygame.display.update()
 
 def update_shapes(shapes,new_level):
-    if new_level == 5:
-        shapes.append('1')
-    elif new_level == 10:
-        shapes.append('P')
-    elif new_level == 15:
-        shapes.append('W')
+    new_shapes = shapes
+    if new_level >= 5 and '1' not in new_shapes:
+        new_shapes.append('1')
+    if new_level >= 10 and 'P' not in new_shapes:
+        new_shapes.append('P')
+    if new_level >= 15 and 'W' not in new_shapes:
+        new_shapes.append('W')
 
+    return new_shapes
 def update_score(nscore):
     with open('scores.txt', 'r') as f: 
         lines = f.readlines()
