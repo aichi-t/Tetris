@@ -217,9 +217,11 @@ def update_shapes(shapes,new_level):
     new_shapes = shapes
     if new_level >= 5 and '1' not in new_shapes:
         new_shapes.append('1')
-    if new_level >= 10 and 'P' not in new_shapes:
+    if new_level >= 10 and 'F' not in new_shapes:
+        new_shapes.append('F')
+    if new_level >= 15 and 'P' not in new_shapes:
         new_shapes.append('P')
-    if new_level >= 15 and 'W' not in new_shapes:
+    if new_level >= 20 and 'W' not in new_shapes:
         new_shapes.append('W')
 
     return new_shapes

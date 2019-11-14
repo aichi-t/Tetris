@@ -1,10 +1,12 @@
 # Add music
 # Add sfx
 # Long piece bug
-# Piece weight
+# Piece weight, chance
 # W 
 # 3 * 3 piece
 # save fall speed
+# Instant drop
+# Game over bug. Too tall?
 
 import pygame
 import json
@@ -28,7 +30,9 @@ block_size = 30
 top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height
 
-shapes = ['S','Z','I','O','J','L','T','F']
+shapes = ['S','Z','I','O','J','L','T']
+original_shapes = ['S','Z','I','O','J','L','T']
+
 
 
 def main(win):
@@ -56,9 +60,13 @@ def main(win):
 
     pygame.mixer.pre_init()
     pygame.mixer.init()
-    # pygame.mixer.music.load('./sounds/bgm.mp3')
-    # pygame.mixer.music.play(-1)
+    pygame.mixer.music.load('./sounds/bgm.mp3')
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.3)
 
+    rotation_sound = pygame.mixer.Sound('./sounds/type.wav')
+    four_row_sound = pygame.mixer.Sound('./sounds/four_rows.wav')
+    hold_sound = pygame.mixer.Sound('./sounds/nandeyanen.wav')
 
     while run:
         swapped_piece = False
@@ -80,7 +88,7 @@ def main(win):
             if not (valid_space(current_piece,grid)) and current_piece.y >0:
                 current_piece.y -= 1
                 piece_landed = True
-                if landed_delay > 700:
+                if landed_delay > 500:
                     change_piece = True
                     piece_landed = False
                     landed_delay = 0
@@ -108,8 +116,7 @@ def main(win):
                         current_piece.y -= 1
 
                 if event.key == pygame.K_UP:
-                    sound = pygame.mixer.Sound("./sounds/type.mp3")
-                    sound.play()
+                    rotation_sound.play()
                     current_piece.rotation += 1
                     if piece_landed:
                         landed_delay -= 200
@@ -121,6 +128,15 @@ def main(win):
                     if not (valid_space(current_piece,grid)):
                         current_piece.y -= 3
 
+                if event.key == pygame.K_LSHIFT:
+                    for i in range(20,1,-1):
+                        current_piece.y += i
+                        if not (valid_space(current_piece,grid)):
+                            current_piece.y -= i
+                        else:
+                            break
+                    change_piece = True
+
                 # if event.key == pygame.K_RETURN:
                     # current_piece.y += 4
                     # if not (valid_space(current_piece,grid)):
@@ -128,6 +144,7 @@ def main(win):
                 
                 if event.key == pygame.K_RSHIFT:
                     if not hold_lock:
+                        hold_sound.play()
                         swapped_piece = True
                         hold_lock = True
                         if hold_piece == None:
@@ -220,7 +237,10 @@ def main(win):
                 current_piece = next_piece
                 next_piece = get_shape(shapes)
                 change_piece = False
-                score += clear_rows(grid, locked_positions) * 10
+                deleted_lines = clear_rows(grid,locked_positions)
+                if deleted_lines >= 4:
+                    four_row_sound.play()
+                score += deleted_lines * 10
                 hold_lock = False
 
         # Changing the speed of the piece fall as the level increases 
@@ -233,9 +253,9 @@ def main(win):
                 if current_level < 5:
                     fall_speed -= 0.03
                 elif current_level < 10:
-                    fall_speed -= 0.04
+                    fall_speed -= 0.05
                 else:
-                    fall_speed -= 0.02
+                    fall_speed -= 0.025
                 
 
         draw_window(win,grid,score,current_level)
@@ -254,6 +274,7 @@ def main(win):
         if check_lost(locked_positions):
             draw_text_middle("Game Over!", 80, (255,255,255),win)
             pygame.display.update()
+            shapes = original_shapes
             pygame.time.delay(3000)
             run = False
             update_score(score)
