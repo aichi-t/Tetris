@@ -7,6 +7,7 @@
 # save fall speed
 # Instant drop
 # Game over bug. Too tall?
+# Boot lag
 
 import pygame
 import json

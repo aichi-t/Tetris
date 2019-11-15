@@ -103,23 +103,34 @@ def draw_grid(surface, grid):
 def clear_rows(grid, locked):
 
     inc = 0
+    del_rows = []
     for i in range(len(grid) -1, -1, -1):
         row = grid[i]
         if (0,0,0) not in row:
             inc += 1
-            ind = i
+            # ind = i
+            del_rows.append(i)
             for j in range(len(row)):
                 try:
                     del locked[(j,i)]
                 except:
                     continue
+    for key in sorted(list(locked), key = lambda x:x[1])[::-1]:
+        x, y = key
+        shift = 0
+        for row in del_rows:
+            if y < row:
+                shift += 1
+            
+        newKey = (x,y + shift)
+        locked[newKey] = locked.pop(key)
     
-    if inc > 0:
-        for key in sorted(list(locked), key = lambda x:x[1])[::-1]:
-            x, y = key
-            if y < ind:
-                newKey = (x,y + inc)
-                locked[newKey] = locked.pop(key)
+    # if inc > 0:
+        # for key in sorted(list(locked), key = lambda x:x[1])[::-1]:
+            # x, y = key
+            # if y < ind:
+                # newKey = (x,y + inc)
+                # locked[newKey] = locked.pop(key)
 
     return inc
 
@@ -215,8 +226,8 @@ def draw_window(surface,grid,score,current_level):
 
 def update_shapes(shapes,new_level):
     new_shapes = shapes
-    if new_level >= 5 and '1' not in new_shapes:
-        new_shapes.append('1')
+    # if new_level >= 5 and '1' not in new_shapes:
+        # new_shapes.append('1')
     if new_level >= 10 and 'F' not in new_shapes:
         new_shapes.append('F')
     if new_level >= 15 and 'P' not in new_shapes:
