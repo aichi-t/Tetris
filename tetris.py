@@ -1,13 +1,6 @@
-# Add music
-# Add sfx
-# Long piece bug
-# Piece weight, chance
-# W 
 # 3 * 3 piece
 # save fall speed
-# Instant drop
-# Game over bug. Too tall?
-# Boot lag
+# Instant drop fit bug
 
 import pygame
 import json
@@ -32,6 +25,7 @@ top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height
 
 shapes = ['S','Z','I','O','J','L','T']
+# shapes = ['I','O']
 original_shapes = ['S','Z','I','O','J','L','T']
 
 
@@ -55,13 +49,14 @@ def main(win):
     score = 0
     piece_landed = False
     landed_delay = 0
+    delay_limit = 700
     leveled_up = False
     time_since_level_up = 0
     paused = False
 
     pygame.mixer.pre_init()
     pygame.mixer.init()
-    pygame.mixer.music.load('./sounds/bgm.mp3')
+    pygame.mixer.music.load('./sounds/mario.mp3')
     pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.3)
 
@@ -89,7 +84,7 @@ def main(win):
             if not (valid_space(current_piece,grid)) and current_piece.y >0:
                 current_piece.y -= 1
                 piece_landed = True
-                if landed_delay > 500:
+                if landed_delay > delay_limit:
                     change_piece = True
                     piece_landed = False
                     landed_delay = 0
@@ -130,7 +125,7 @@ def main(win):
                         current_piece.y -= 3
 
                 if event.key == pygame.K_LSHIFT:
-                    for i in range(20,1,-1):
+                    for i in range(20,0,-1):
                         current_piece.y += i
                         if not (valid_space(current_piece,grid)):
                             current_piece.y -= i
@@ -153,12 +148,12 @@ def main(win):
                             hold_piece.reset_piece(5,0)
                             current_piece = next_piece
                             next_piece = get_shape(shapes)
+                            next_piece = check_duplicate(hold_piece,current_piece,next_piece,shapes)
                         else:
                             temp_current_piece = current_piece
                             current_piece = hold_piece
                             hold_piece = temp_current_piece 
                             hold_piece.reset_piece(5,0)
-                            # next_piece = get_shape()
                 
                 if event.key == pygame.K_ESCAPE:
                     
@@ -234,9 +229,10 @@ def main(win):
                     p = (pos[0],pos[1])
                     locked_positions[p] = current_piece.color
 
-
+                last_piece = current_piece
                 current_piece = next_piece
                 next_piece = get_shape(shapes)
+                next_piece = check_duplicate(last_piece,current_piece,next_piece,shapes)
                 change_piece = False
                 deleted_lines = clear_rows(grid,locked_positions)
                 if deleted_lines >= 4:
@@ -254,7 +250,7 @@ def main(win):
                 if current_level < 5:
                     fall_speed -= 0.03
                 elif current_level < 10:
-                    fall_speed -= 0.05
+                    fall_speed -= 0.035
                 else:
                     fall_speed -= 0.025
                 

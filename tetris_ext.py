@@ -44,8 +44,7 @@ def convert_shape_format(shape):
 
 
 def valid_space(shape, grid):
-    accepted_pos = [[(j, i) for j in range(10) if grid[i]
-                     [j] == (0, 0, 0)] for i in range(20)]
+    accepted_pos = [[(j, i) for j in range(10) if grid[i][j] == (0, 0, 0)] for i in range(20)]
     accepted_pos = [j for sub in accepted_pos for j in sub]
 
     formatted = convert_shape_format(shape)
@@ -59,7 +58,7 @@ def valid_space(shape, grid):
 def check_lost(positions):
     for pos in positions:
         x ,y = pos
-        if y < 1:
+        if y < 0:
             return True
     return False
 
@@ -226,8 +225,8 @@ def draw_window(surface,grid,score,current_level):
 
 def update_shapes(shapes,new_level):
     new_shapes = shapes
-    # if new_level >= 5 and '1' not in new_shapes:
-        # new_shapes.append('1')
+    if new_level >= 5 and '1' not in new_shapes:
+        new_shapes.append('1')
     if new_level >= 10 and 'F' not in new_shapes:
         new_shapes.append('F')
     if new_level >= 15 and 'P' not in new_shapes:
@@ -365,9 +364,19 @@ def load_state():
 
     return (locked,current_piece,next_piece,hold_piece,current_level,score)
 
-if __name__ == "__main__":
-    current_piece = Piece(5,0,'I')
-    next_piece = Piece(5,0,'J')
+def check_duplicate(last_piece,current_piece,next_piece,shapes):
+    if last_piece.letter != current_piece.letter:
+        return next_piece
+    else:
+        while current_piece.letter == next_piece.letter:
+            next_piece = get_shape(shapes)
+        return next_piece
 
-    locked = {(0,1):(221,42,53),(1,52):(33,44,33)}
-    # save_state(locked,current_piece,next_piece)
+if __name__ == "__main__":
+    shapes = ['I','O']
+    last = get_shape(shapes)
+    current = get_shape(shapes)
+    next_p = get_shape(shapes)
+    print("Last: %s\nCurrent: %s\nNext: %s\n " % (last.letter,current.letter,next_p.letter))
+    print(check_duplicate(last,current,next_p,shapes).letter)
+    
